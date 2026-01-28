@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "username": "trader1",
+    "email": "trader1@example.com",
+    "role": "TRADER"
+  },
+  {
+    "id": 2,
+    "username": "admin1",
+    "email": "admin1@example.com",
+    "role": "ADMIN"
+  },
+  {
+    "id": 3,
+    "username": "trader2",
+    "email": "trader2@example.com",
+    "role": "TRADER"
+  },
+  {
+    "id": 4,
+    "username": "analyst1",
+    "email": "analyst1@example.com",
+    "role": "ANALYST"
+  },
+  {
+    "id": 5,
+    "username": "manager1",
+    "email": "manager1@example.com",
+    "role": "MANAGER"
+  }
+]
