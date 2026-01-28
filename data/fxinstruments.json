@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "symbol": "EUR/USD",
+    "baseCurrency": "EUR",
+    "quoteCurrency": "USD",
+    "tickSize": 0.0001
+  },
+  {
+    "id": 2,
+    "symbol": "GBP/USD",
+    "baseCurrency": "GBP",
+    "quoteCurrency": "USD",
+    "tickSize": 0.0001
+  },
+  {
+    "id": 3,
+    "symbol": "USD/JPY",
+    "baseCurrency": "USD",
+    "quoteCurrency": "JPY",
+    "tickSize": 0.01
+  },
+  {
+    "id": 4,
+    "symbol": "USD/CHF",
+    "baseCurrency": "USD",
+    "quoteCurrency": "CHF",
+    "tickSize": 0.0001
+  },
+  {
+    "id": 5,
+    "symbol": "AUD/USD",
+    "baseCurrency": "AUD",
+    "quoteCurrency": "USD",
+    "tickSize": 0.0001
+  }
+]
