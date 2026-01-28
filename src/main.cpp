@@ -1,3 +1,16 @@
+/*
+ * HFTools - Cross-platform Database Library Demo Application
+ * 
+ * SECURITY NOTE: This is a demonstration application with mock database implementations.
+ * For production use, consider the following security best practices:
+ * - Never hardcode credentials in source code
+ * - Use parameterized queries to prevent SQL injection
+ * - Redact sensitive information (passwords) from logs
+ * - Use secure credential management systems (environment variables, vaults)
+ * - Implement proper input validation and sanitization
+ * - Add comprehensive error handling for all operations
+ */
+
 #include <iostream>
 #include <fstream>
 #include <memory>
@@ -67,31 +80,42 @@ void loadAndDisplayJson(const std::string& filename) {
     }
     
     nlohmann::json j;
-    file >> j;
+    try {
+        file >> j;
+    } catch (const nlohmann::json::parse_error& e) {
+        std::cerr << "Error: Failed to parse JSON file: " << e.what() << std::endl;
+        file.close();
+        return;
+    }
     file.close();
     
     // Determine type based on filename
-    if (filename.find("users") != std::string::npos) {
-        std::cout << "Loading users:\n";
-        for (const auto& userJson : j) {
-            User user = User::fromJson(userJson);
-            std::cout << "  - " << user.getUsername() << " (" << user.getEmail() << ") - " << user.getRole() << "\n";
+    try {
+        if (filename.find("users") != std::string::npos) {
+            std::cout << "Loading users:\n";
+            for (const auto& userJson : j) {
+                User user = User::fromJson(userJson);
+                std::cout << "  - " << user.getUsername() << " (" << user.getEmail() << ") - " << user.getRole() << "\n";
+            }
+        } else if (filename.find("fxinstruments") != std::string::npos) {
+            std::cout << "Loading FX Instruments:\n";
+            for (const auto& fxJson : j) {
+                FXInstrument fx = FXInstrument::fromJson(fxJson);
+                std::cout << "  - " << fx.getSymbol() << " (" << fx.getBaseCurrency() 
+                          << "/" << fx.getQuoteCurrency() << ") - Tick: " << fx.getTickSize() << "\n";
+            }
+        } else if (filename.find("trades") != std::string::npos) {
+            std::cout << "Loading Trades:\n";
+            for (const auto& tradeJson : j) {
+                Trade trade = Trade::fromJson(tradeJson);
+                std::cout << "  - Trade #" << trade.getId() << ": " << trade.getSide() 
+                          << " " << trade.getQuantity() << " @ " << trade.getPrice() 
+                          << " (" << trade.getTimestamp() << ")\n";
+            }
         }
-    } else if (filename.find("fxinstruments") != std::string::npos) {
-        std::cout << "Loading FX Instruments:\n";
-        for (const auto& fxJson : j) {
-            FXInstrument fx = FXInstrument::fromJson(fxJson);
-            std::cout << "  - " << fx.getSymbol() << " (" << fx.getBaseCurrency() 
-                      << "/" << fx.getQuoteCurrency() << ") - Tick: " << fx.getTickSize() << "\n";
-        }
-    } else if (filename.find("trades") != std::string::npos) {
-        std::cout << "Loading Trades:\n";
-        for (const auto& tradeJson : j) {
-            Trade trade = Trade::fromJson(tradeJson);
-            std::cout << "  - Trade #" << trade.getId() << ": " << trade.getSide() 
-                      << " " << trade.getQuantity() << " @ " << trade.getPrice() 
-                      << " (" << trade.getTimestamp() << ")\n";
-        }
+    } catch (const nlohmann::json::exception& e) {
+        std::cerr << "Error: Failed to parse object from JSON: " << e.what() << std::endl;
+        return;
     }
     
     std::cout << std::endl;

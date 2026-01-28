@@ -1,6 +1,7 @@
 #include "hftools/database/PostgreSQLDatabase.h"
 #include "hftools/database/ResultSet.h"
 #include <iostream>
+#include <algorithm>
 
 namespace hftools {
 namespace database {
@@ -40,16 +41,20 @@ std::shared_ptr<ResultSet> PostgreSQLConnection::execQuery(const std::string& qu
     // Mock implementation - create a result set with sample data
     auto rs = std::make_shared<ResultSet>();
     
+    // Convert query to lowercase for case-insensitive comparison
+    std::string lowerQuery = query;
+    std::transform(lowerQuery.begin(), lowerQuery.end(), lowerQuery.begin(), ::tolower);
+    
     // Parse simple SELECT queries and return mock data
-    if (query.find("SELECT") != std::string::npos) {
-        if (query.find("users") != std::string::npos) {
+    if (lowerQuery.find("select") != std::string::npos) {
+        if (lowerQuery.find("users") != std::string::npos) {
             rs->setColumnNames({"id", "username", "email", "role"});
             rs->addRow({{"id", "1"}, {"username", "trader1"}, {"email", "trader1@example.com"}, {"role", "TRADER"}});
             rs->addRow({{"id", "2"}, {"username", "admin1"}, {"email", "admin1@example.com"}, {"role", "ADMIN"}});
-        } else if (query.find("fxinstruments") != std::string::npos) {
+        } else if (lowerQuery.find("fxinstruments") != std::string::npos) {
             rs->setColumnNames({"id", "symbol", "base_currency", "quote_currency", "tick_size"});
             rs->addRow({{"id", "1"}, {"symbol", "EUR/USD"}, {"base_currency", "EUR"}, {"quote_currency", "USD"}, {"tick_size", "0.0001"}});
-        } else if (query.find("trades") != std::string::npos) {
+        } else if (lowerQuery.find("trades") != std::string::npos) {
             rs->setColumnNames({"id", "user_id", "instrument_id", "side", "quantity", "price", "timestamp"});
             rs->addRow({{"id", "1"}, {"user_id", "1"}, {"instrument_id", "1"}, {"side", "BUY"}, {"quantity", "100000"}, {"price", "1.0850"}, {"timestamp", "2024-01-28 12:00:00"}});
         }
