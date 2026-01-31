@@ -194,30 +194,6 @@ void testDatabaseConnection(const std::string& dbType, const std::string& connSt
     }
 }
 
-// implement queryOnePrepared / queryManyPrepared / executePrepared
-nlohmann::json MyDatabase::queryOnePrepared(
-    const std::string& sql,
-    const std::vector<nlohmann::json>& params)
-{
-    nlohmann::json j1;
-	return j1;
-}
-
-std::vector<nlohmann::json> MyDatabase::queryManyPrepared(
-    const std::string& sql,
-    const std::vector<nlohmann::json>& params)
-{
-    std::vector<nlohmann::json> jv;
-	return jv;
-}
-
-int MyDatabase::executePrepared(
-    const std::string& sql,
-    const std::vector<nlohmann::json>& params)
-{
-    return 0;
-}
-
 void runORMTestDemonstration() 
 {
     std::cout << "\n======================================" << std::endl;
