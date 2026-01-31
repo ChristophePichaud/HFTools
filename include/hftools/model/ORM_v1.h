@@ -17,6 +17,14 @@
 namespace hftools {
 namespace model {
 
+// Column must be defined before EntityTraits
+
+template <typename T, typename FieldType>
+struct Column {
+    std::string_view name;
+    FieldType T::* member;
+};
+
 class BaseEntity {
 public:
     BaseEntity() = default;
@@ -30,14 +38,13 @@ protected:
     std::string _internalName;
 };
 
-class FXInstrument : public BaseEntity {
+class FXInstrument2 : public BaseEntity {
 public:
-    FXInstrument() = default;
+    FXInstrument2() = default;
 
     nlohmann::json toJson() const override;
-    static FXInstrument fromJson(const nlohmann::json& j);
+    static FXInstrument2 fromJson(const nlohmann::json& j);
 
-private:
     int _id = 0;
     int _userId = 0;
     int _instrumentId = 0;
@@ -49,6 +56,27 @@ private:
     template<typename T> friend struct EntityTraits;
 };
 
+template<typename T>
+struct EntityTraits; // primary template
+
+template<>
+struct EntityTraits<hftools::model::FXInstrument2> {
+    using Entity = hftools::model::FXInstrument2;
+
+    static constexpr std::string_view tableName  = "FXInstrument2";
+    static constexpr std::string_view primaryKey = "id";
+
+    static constexpr auto columns = std::make_tuple(
+        Column<Entity, int>{ "id", &Entity::_id },
+        Column<Entity, int>{ "userId", &Entity::_userId },
+        Column<Entity, int>{ "instrumentId", &Entity::_instrumentId },
+        Column<Entity, std::string>{ "side", &Entity::_side },
+        Column<Entity, double>{ "quantity", &Entity::_quantity },
+        Column<Entity, double>{ "price", &Entity::_price },
+        Column<Entity, std::string>{ "timestamp", &Entity::_timestamp }
+    );
+};
+
 } // namespace model
 } // namespace hftools
 
@@ -58,9 +86,9 @@ private:
 // =======================
 //
 
-class IDatabase {
+class IDatabase2 {
 public:
-    virtual ~IDatabase() = default;
+    virtual ~IDatabase2() = default;
 
     virtual nlohmann::json queryOnePrepared(
         const std::string& sql,
@@ -75,50 +103,33 @@ public:
         const std::vector<nlohmann::json>& params) = 0;
 };
 
+class MyDatabase : public IDatabase2
+{
+    // implement queryOnePrepared / queryManyPrepared / executePrepared
+    virtual nlohmann::json queryOnePrepared(
+        const std::string& sql,
+        const std::vector<nlohmann::json>& params);
+
+    virtual std::vector<nlohmann::json> queryManyPrepared(
+        const std::string& sql,
+        const std::vector<nlohmann::json>& params);
+
+    virtual int executePrepared(
+        const std::string& sql,
+        const std::vector<nlohmann::json>& params);
+};
+
 //
 // =======================
 // 3. Column & ColumnList
 // =======================
 //
 
-template <typename T, typename FieldType>
-struct Column {
-    std::string_view name;
-    FieldType T::* member;
-};
-
-template <typename T, typename... Cols>
-struct ColumnList {
-    static constexpr auto columns = std::tuple<Cols...>{};
-};
-
 //
 // =======================
-// 4. EntityTraits<FXInstrument>
+// 4. EntityTraits<FXInstrument2>
 // =======================
 //
-
-template<typename T>
-struct EntityTraits; // primary template
-
-template<>
-struct EntityTraits<hftools::model::FXInstrument> {
-    using Entity = hftools::model::FXInstrument;
-
-    static constexpr std::string_view tableName  = "employees";
-    static constexpr std::string_view primaryKey = "id";
-
-    static constexpr auto columns = ColumnList<
-        Entity,
-        Column<Entity, int>{ "id", &Entity::_id },
-        Column<Entity, int>{ "userId", &Entity::_userId },
-        Column<Entity, int>{ "instrumentId", &Entity::_instrumentId },
-        Column<Entity, std::string>{ "side", &Entity::_side },
-        Column<Entity, double>{ "quantity", &Entity::_quantity },
-        Column<Entity, double>{ "price", &Entity::_price },
-        Column<Entity, std::string>{ "timestamp", &Entity::_timestamp }
-    >::columns;
-};
 
 //
 // =======================
@@ -156,22 +167,24 @@ nlohmann::json autoToJson(const T& obj) {
 }
 
 template<typename T>
-T autoFromJson(const nlohmann::json& j) {
+T autoFromJson(const nlohmann::json& j) 
+{
     T obj;
-    for_each(EntityTraits<T>::columns, [&](auto col) {
-        using FieldType = decltype(obj.*(col.member));
-        obj.*(col.member) = j.at(col.name).template get<FieldType>();
-    });
+    //for_each(EntityTraits<T>::columns, [&](auto col) {
+    //    using FieldType = decltype(obj.*(col.member));
+    //    obj.*(col.member) = j.at(col.name).template get<FieldType>();
+    //});
     return obj;
 }
 
-inline nlohmann::json hftools::model::FXInstrument::toJson() const {
+inline nlohmann::json hftools::model::FXInstrument2::toJson() const {
     return autoToJson(*this);
 }
 
-inline hftools::model::FXInstrument
-hftools::model::FXInstrument::fromJson(const nlohmann::json& j) {
-    return autoFromJson<hftools::model::FXInstrument>(j);
+inline hftools::model::FXInstrument2
+hftools::model::FXInstrument2::fromJson(const nlohmann::json& j) 
+{
+    return autoFromJson<hftools::model::FXInstrument2>(j);
 }
 
 //
@@ -293,7 +306,7 @@ std::vector<nlohmann::json> buildDeleteParams(const T& obj) {
 template<typename T>
 class Repository {
 public:
-    explicit Repository(IDatabase& db) : db_(db) {}
+    explicit Repository(IDatabase2& db) : db_(db) {}
 
     T getById(int id) {
         std::string sql =
@@ -342,7 +355,7 @@ public:
     }
 
 private:
-    IDatabase& db_;
+    IDatabase2& db_;
 };
 
 //
@@ -350,12 +363,12 @@ private:
 // 9. Example usage (sketch)
 // =======================
 //
-// class MyDatabase : public IDatabase {
+// class MyDatabase : public IDatabase2 {
 //     // implement queryOnePrepared / queryManyPrepared / executePrepared
 // };
 //
 // MyDatabase db;
-// Repository<hftools::model::FXInstrument> repo(db);
+// Repository<hftools::model::FXInstrument2> repo(db);
 //
 // auto e  = repo.getById(42);
 // auto all = repo.getAll();

@@ -27,6 +27,7 @@
 #include "hftools/model/User.h"
 #include "hftools/model/FXInstrument.h"
 #include "hftools/model/Trade.h"
+#include "hftools/model/ORM_v1.h"
 
 using namespace hftools;
 using namespace hftools::database;
@@ -193,11 +194,48 @@ void testDatabaseConnection(const std::string& dbType, const std::string& connSt
     }
 }
 
+// implement queryOnePrepared / queryManyPrepared / executePrepared
+nlohmann::json MyDatabase::queryOnePrepared(
+    const std::string& sql,
+    const std::vector<nlohmann::json>& params)
+{
+    nlohmann::json j1;
+	return j1;
+}
+
+std::vector<nlohmann::json> MyDatabase::queryManyPrepared(
+    const std::string& sql,
+    const std::vector<nlohmann::json>& params)
+{
+    std::vector<nlohmann::json> jv;
+	return jv;
+}
+
+int MyDatabase::executePrepared(
+    const std::string& sql,
+    const std::vector<nlohmann::json>& params)
+{
+    return 0;
+}
+
 void runORMTestDemonstration() 
 {
     std::cout << "\n======================================" << std::endl;
     std::cout << "HFTools - ORM Financial System Demo" << std::endl;
     std::cout << "======================================\n" << std::endl;
+
+    // =======================
+    // 9. Example usage (sketch)
+    // =======================
+    
+    MyDatabase db;
+    Repository<hftools::model::FXInstrument2> repo(db);
+    
+    auto e  = repo.getById(42);
+    auto all = repo.getAll();
+    repo.insert(e);
+    repo.update(e);
+    repo.remove(e);
 }
     
 void runTestDemonstration() 
@@ -232,12 +270,12 @@ int main(int argc, char* argv[])
     bool runTest = false;
     
     // If no arguments provided, show help
-    if (argc == 1) 
-    {
-        printUsage(argv[0]);
-        std::cout << "\nTip: Run with --test to see a demonstration of all features.\n" << std::endl;
-        return 0;
-    }
+    //if (argc == 1) 
+    //{
+    //    printUsage(argv[0]);
+    //    std::cout << "\nTip: Run with --test to see a demonstration of all features.\n" << std::endl;
+    //    return 0;
+    //}
 
     cxxopts::Options options("MyProgram", "One line description of MyProgram");
 
@@ -292,7 +330,8 @@ int main(int argc, char* argv[])
     }
     
     // Run ORM test demonstration
-    if (runORMTest) {
+    //if (runORMTest) 
+    {
         runORMTestDemonstration();
         return 0;
     }
