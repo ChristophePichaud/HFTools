@@ -15,7 +15,9 @@
 #include <fstream>
 #include <memory>
 #include <vector>
-#include <getopt.h>
+//#include "getopt/getopt.h"
+#include "cxxopts/cxxopts.hpp"
+#include "nlohmann/json.hpp"
 
 #include "hftools/database/IDatabase.h"
 #include "hftools/database/Connection.h"
@@ -37,6 +39,7 @@ void printUsage(const char* progName) {
               << "  -c, --connection STR    Connection string\n"
               << "  -q, --query QUERY       Execute SQL query\n"
               << "  -j, --json FILE         Load JSON file and display POCO objects\n"
+              << "  -o, --orm               Run ORM test\n"
               << "  -t, --test              Run test demonstration\n"
               << "  -h, --help              Display this help message\n"
               << std::endl;
@@ -190,7 +193,15 @@ void testDatabaseConnection(const std::string& dbType, const std::string& connSt
     }
 }
 
-void runTestDemonstration() {
+void runORMTestDemonstration() 
+{
+    std::cout << "\n======================================" << std::endl;
+    std::cout << "HFTools - ORM Financial System Demo" << std::endl;
+    std::cout << "======================================\n" << std::endl;
+}
+    
+void runTestDemonstration() 
+{
     std::cout << "\n======================================" << std::endl;
     std::cout << "HFTools - Financial System Demo" << std::endl;
     std::cout << "======================================\n" << std::endl;
@@ -211,61 +222,81 @@ void runTestDemonstration() {
     loadAndDisplayJson("data/trades.json");
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) 
+{
     std::string dbType;
     std::string connStr;
     std::string query;
     std::string jsonFile;
+    bool runORMTest = false;
     bool runTest = false;
     
-    // Define long options
-    static struct option long_options[] = {
-        {"database",   required_argument, 0, 'd'},
-        {"connection", required_argument, 0, 'c'},
-        {"query",      required_argument, 0, 'q'},
-        {"json",       required_argument, 0, 'j'},
-        {"test",       no_argument,       0, 't'},
-        {"help",       no_argument,       0, 'h'},
-        {0, 0, 0, 0}
-    };
-    
-    int opt;
-    int option_index = 0;
-    
-    // Parse command line arguments
-    while ((opt = getopt_long(argc, argv, "d:c:q:j:th", long_options, &option_index)) != -1) {
-        switch (opt) {
-            case 'd':
-                dbType = optarg;
-                break;
-            case 'c':
-                connStr = optarg;
-                break;
-            case 'q':
-                query = optarg;
-                break;
-            case 'j':
-                jsonFile = optarg;
-                break;
-            case 't':
-                runTest = true;
-                break;
-            case 'h':
-                printUsage(argv[0]);
-                return 0;
-            default:
-                printUsage(argv[0]);
-                return 1;
-        }
-    }
-    
     // If no arguments provided, show help
-    if (argc == 1) {
+    if (argc == 1) 
+    {
         printUsage(argv[0]);
         std::cout << "\nTip: Run with --test to see a demonstration of all features.\n" << std::endl;
         return 0;
     }
+
+    cxxopts::Options options("MyProgram", "One line description of MyProgram");
+
+    options.add_options()
+    ("d,database", "database type", cxxopts::value<std::string>()) // a bool parameter
+    ("c,connection", "Connection string", cxxopts::value<std::string>())
+    ("q,query", "Query string", cxxopts::value<std::string>())
+    ("j,json", "JSON file to load", cxxopts::value<std::string>())
+    ("o,orm", "Run orm demonstration", cxxopts::value<bool>()->default_value("false"))
+    ("t,test", "Run test demonstration", cxxopts::value<bool>()->default_value("false"))
+    ("h,help", "Print usage")
+    ("v,verbose", "Verbose output", cxxopts::value<bool>()->default_value("false"))
+    ;
     
+  
+    auto result = options.parse(argc, argv);
+
+    if( result.count("help") )
+    {
+        printUsage(argv[0]);
+        return 0;
+    }
+
+    if( result.count("database") )
+    {
+        dbType = result["database"].as<std::string>();
+    }
+
+    if( result.count("connection") )
+    {
+        connStr = result["connection"].as<std::string>();
+    }
+
+    if( result.count("query") )
+    {
+        query =  result["query"].as<std::string>();
+    }
+
+    if( result.count("json") )
+    {
+        jsonFile = result["json"].as<std::string>();
+    }
+
+    if (result.count("orm"))
+    {
+        runORMTest = result["orm"].as<bool>();
+    }
+
+    if( result.count("test") )
+    {
+        runTest = result["test"].as<bool>();
+    }
+    
+    // Run ORM test demonstration
+    if (runORMTest) {
+        runORMTestDemonstration();
+        return 0;
+    }
+
     // Run test demonstration
     if (runTest) {
         runTestDemonstration();
