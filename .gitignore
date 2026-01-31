@@ -57,3 +57,7 @@ Makefile
 
 # Dependencies
 _deps/
+/x64/Debug
+/.vs/HFTools
+/hftools.dir/Debug
+/hftools_app.dir/Debug
